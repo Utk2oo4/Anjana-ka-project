@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, Wifi, WifiOff, Download, Check, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Bell, Menu, Wifi, WifiOff, Gamepad2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-export const TopBar = ({ onOpenMobileMenu, onOpenVoice, searchQuery, setSearchQuery }) => {
-  const { caregiver, notifications, isOnline, pendingSyncCount, patients, selectedPatientId, setSelectedPatientId } = useApp();
+export const TopBar = ({ onOpenMobileMenu, searchQuery, setSearchQuery }) => {
+  const { caregiver, notifications, isOnline, patients, selectedPatientId, setSelectedPatientId, switchPortal } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
+  const navigate = useNavigate();
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const handleLaunchPatientPortal = () => {
+    switchPortal('patient', selectedPatientId);
+    navigate('/patient');
+  };
+
   return (
-    <header className="sticky top-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#2D2A3E]/5 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#2D2A3E]/5 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 pt-safe flex items-center justify-between gap-2.5 sm:gap-4">
       {/* Left: Mobile menu toggle + Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-xl">
         <button
           onClick={onOpenMobileMenu}
-          className="lg:hidden p-2 rounded-xl text-[#2D2A3E] hover:bg-[#2D2A3E]/5 transition-colors"
+          className="lg:hidden p-2 rounded-xl text-[#2D2A3E] hover:bg-[#2D2A3E]/5 transition-colors cursor-pointer"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -33,6 +40,16 @@ export const TopBar = ({ onOpenMobileMenu, onOpenVoice, searchQuery, setSearchQu
 
       {/* Right: Actions, Patient Switcher & Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Switch to Patient Portal Button */}
+        <button
+          onClick={handleLaunchPatientPortal}
+          className="px-3.5 py-1.5 rounded-xl bg-[#8B7EC8] hover:bg-[#796BB9] text-white text-xs font-bold shadow-xs hover:shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+          title="Open Patient Portal view for the selected patient"
+        >
+          <Gamepad2 className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Launch Patient Portal</span>
+        </button>
+
         {/* Patient Switcher */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white border border-[#2D2A3E]/10 rounded-xl text-xs font-medium text-[#2D2A3E]">
           <span className="text-[#6E6A82]">Patient:</span>
@@ -64,7 +81,7 @@ export const TopBar = ({ onOpenMobileMenu, onOpenVoice, searchQuery, setSearchQu
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl bg-white border border-[#2D2A3E]/10 text-[#2D2A3E] hover:bg-[#2D2A3E]/5 transition-colors shadow-2xs"
+            className="relative p-2 rounded-xl bg-white border border-[#2D2A3E]/10 text-[#2D2A3E] hover:bg-[#2D2A3E]/5 transition-colors shadow-2xs cursor-pointer"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
@@ -105,7 +122,7 @@ export const TopBar = ({ onOpenMobileMenu, onOpenVoice, searchQuery, setSearchQu
           </div>
           <div className="hidden xl:block text-left text-xs">
             <p className="font-bold text-[#2D2A3E] leading-none">{caregiver.name}</p>
-            <p className="text-[10px] text-[#6E6A82] mt-0.5">Caregiver</p>
+            <p className="text-[10px] text-[#6E6A82] mt-0.5">Caretaker</p>
           </div>
         </div>
       </div>

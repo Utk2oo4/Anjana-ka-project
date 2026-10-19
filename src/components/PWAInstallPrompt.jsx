@@ -39,7 +39,7 @@ export const PWAInstallPrompt = () => {
   if (isInstalled || !isVisible) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full animate-in slide-in-from-bottom-5 duration-300 p-2">
+    <div className="fixed bottom-20 sm:bottom-5 right-2 left-2 sm:left-auto sm:right-5 z-50 sm:max-w-sm w-auto animate-in slide-in-from-bottom-5 duration-300 p-1 sm:p-2">
       <div className="bg-[#2D2A3E] text-white rounded-3xl p-5 shadow-2xl border border-white/10 relative overflow-hidden flex items-center gap-4">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#8B7EC8] to-[#A8BBA0] flex items-center justify-center text-white shrink-0 shadow-sm">
           <Smartphone className="w-6 h-6" />

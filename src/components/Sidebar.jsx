@@ -10,12 +10,13 @@ import {
   LogOut,
   Sparkles,
   Mic,
-  X
+  X,
+  HeartHandshake
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const Sidebar = ({ mobileOpen, setMobileOpen, onOpenVoice }) => {
-  const { caregiver, logout, isOnline, pendingSyncCount } = useApp();
+  const { caregiver, logout, isOnline, pendingSyncCount, switchPortal, selectedPatientId } = useApp();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -58,40 +59,59 @@ export const Sidebar = ({ mobileOpen, setMobileOpen, onOpenVoice }) => {
               <h1 className="text-xl font-bold tracking-tight text-white font-display flex items-center gap-1.5">
                 Anjana
               </h1>
-              <p className="text-xs text-[#A8BBA0] font-medium tracking-wide">Cognitive Care AI</p>
+              <p className="text-xs text-[#A8BBA0] font-medium tracking-wide">Caretaker Portal</p>
             </div>
           </div>
           {setMobileOpen && (
             <button
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden text-white/70 hover:text-white p-1 rounded-lg"
+              className="lg:hidden text-white/70 hover:text-white p-1 rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           )}
         </div>
 
-        {/* Voice Assistant Shortcut */}
-        <div className="px-4 pt-4">
+        {/* Action Shortcuts: Patient Portal & Voice Assistant */}
+        <div className="px-4 pt-4 space-y-2">
+          {/* Switch to Patient Portal */}
           <button
             onClick={() => {
               if (setMobileOpen) setMobileOpen(false);
-              onOpenVoice && onOpenVoice();
+              switchPortal('patient', selectedPatientId);
+              navigate('/patient');
             }}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#8B7EC8]/20 to-[#A8BBA0]/20 border border-[#8B7EC8]/30 hover:border-[#8B7EC8]/60 text-white text-sm font-medium transition-all group"
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#8B7EC8] to-[#9F91D9] hover:from-[#7B6EB8] hover:to-[#8E80C8] text-white text-sm font-semibold transition-all shadow-sm group cursor-pointer"
           >
-            <div className="w-7 h-7 rounded-lg bg-[#8B7EC8] flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <HeartHandshake className="w-4 h-4 text-white" />
+            </div>
+            <div className="text-left flex-1">
+              <div className="text-xs font-bold text-white">Patient Portal</div>
+              <div className="text-[10px] text-white/80">Launch interactive view</div>
+            </div>
+          </button>
+
+          {/* Voice Assistant Shortcut */}
+          <button
+            onClick={() => {
+              if (setMobileOpen) setMobileOpen(false);
+              if (onOpenVoice) onOpenVoice();
+            }}
+            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 text-white text-sm font-medium transition-all group cursor-pointer"
+          >
+            <div className="w-7 h-7 rounded-lg bg-[#8B7EC8]/40 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Mic className="w-4 h-4 text-white animate-pulse" />
             </div>
             <div className="text-left flex-1">
               <div className="text-xs font-semibold text-white">Voice Assistant</div>
-              <div className="text-[10px] text-white/60">Voice interaction tool</div>
+              <div className="text-[10px] text-white/60">Audio commands</div>
             </div>
           </button>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+        {/* Caregiver Navigation Items */}
+        <nav className="flex-1 px-4 py-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -101,7 +121,7 @@ export const Sidebar = ({ mobileOpen, setMobileOpen, onOpenVoice }) => {
                 end={item.to === '/'}
                 onClick={() => setMobileOpen && setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${
+                  `flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                     isActive
                       ? 'bg-[#8B7EC8] text-white shadow-sm font-semibold translate-x-1'
                       : 'text-white/70 hover:text-white hover:bg-white/5'
@@ -142,13 +162,13 @@ export const Sidebar = ({ mobileOpen, setMobileOpen, onOpenVoice }) => {
             </div>
             <div className="truncate">
               <p className="text-sm font-semibold text-white truncate">{caregiver.name}</p>
-              <p className="text-xs text-white/50 truncate">{caregiver.role}</p>
+              <p className="text-xs text-white/50 truncate">Caretaker</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
             title="Sign Out"
-            className="text-white/60 hover:text-rose-300 p-2 rounded-lg hover:bg-white/5 transition-colors"
+            className="text-white/60 hover:text-rose-300 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>

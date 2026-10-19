@@ -190,11 +190,56 @@ export const recentActivity = [
 ];
 
 export const familyMembers = [
-  { id: 'fm-001', patientId: 'pt-001', name: 'David Johnson', relationship: 'Son', photo: null },
-  { id: 'fm-002', patientId: 'pt-001', name: 'Emily Johnson', relationship: 'Daughter', photo: null },
-  { id: 'fm-003', patientId: 'pt-001', name: 'Sarah Anderson', relationship: 'Caregiver', photo: null },
-  { id: 'fm-004', patientId: 'pt-002', name: 'Lisa Chen', relationship: 'Daughter', photo: null },
-  { id: 'fm-005', patientId: 'pt-002', name: 'Michael Chen', relationship: 'Son', photo: null },
+  {
+    id: 'fm-001',
+    patientId: 'pt-001',
+    name: 'David Johnson',
+    relationship: 'Son',
+    relationDetail: 'Lives in Seattle • Calls every Sunday',
+    prompt: 'Your eldest son David. He loves gardening with you and bringing yellow roses!',
+    avatarColor: '#8B7EC8',
+    photo: null
+  },
+  {
+    id: 'fm-002',
+    patientId: 'pt-001',
+    name: 'Emily Johnson',
+    relationship: 'Daughter',
+    relationDetail: 'Pediatrician • Mother of your 2 grandchildren',
+    prompt: 'Your loving daughter Emily. She loves baking apple pie with you!',
+    avatarColor: '#E88C7D',
+    photo: null
+  },
+  {
+    id: 'fm-003',
+    patientId: 'pt-001',
+    name: 'Sarah Anderson',
+    relationship: 'Caregiver & Niece',
+    relationDetail: 'Visits daily • Helps with medications',
+    prompt: 'Your niece and primary caregiver Sarah. She is always here to look after you!',
+    avatarColor: '#A8BBA0',
+    photo: null
+  },
+  {
+    id: 'fm-004',
+    patientId: 'pt-002',
+    name: 'Lisa Chen',
+    relationship: 'Daughter',
+    relationDetail: 'Architect in San Francisco',
+    prompt: 'Your daughter Lisa. She loves enjoying jasmine green tea with you!',
+    avatarColor: '#7BA7C9',
+    photo: null
+  },
+  {
+    id: 'fm-005',
+    patientId: 'pt-002',
+    name: 'Michael Chen',
+    relationship: 'Son',
+    relationDetail: 'High school teacher',
+    prompt: 'Your son Michael. He loves playing chess and discussing history with you!',
+    avatarColor: '#C9B87B',
+    photo: null
+  },
 ];
 
 // Performance data for charts

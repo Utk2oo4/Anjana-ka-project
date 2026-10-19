@@ -6,8 +6,7 @@ import {
   reminders as initialReminders,
   recentActivity as initialActivity,
   familyMembers as initialFamilyMembers,
-  performanceData as initialPerformanceData,
-  dashboardStats as initialStats
+  performanceData as initialPerformanceData
 } from '../data/mockData';
 
 const AppContext = createContext();
@@ -22,9 +21,17 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('anjana_auth') === 'true';
   });
 
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem('anjana_user_role') || 'caregiver';
+  });
+
   const [patients, setPatients] = useState(() => {
     const saved = localStorage.getItem('anjana_patients');
     return saved ? JSON.parse(saved) : initialPatients;
+  });
+
+  const [currentPatientId, setCurrentPatientId] = useState(() => {
+    return localStorage.getItem('anjana_patient_id') || patients[0]?.id || 'pt-001';
   });
 
   const [selectedPatientId, setSelectedPatientId] = useState(patients[0]?.id || 'pt-001');
@@ -44,16 +51,22 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialFamilyMembers;
   });
 
-  const [games, setGames] = useState(initialGames);
+  const [games] = useState(initialGames);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const [activePatientAlert, setActivePatientAlert] = useState(null);
+
   const [notifications, setNotifications] = useState([
     { id: 'n-1', text: 'Robert Chen missed Hydration Check (2:00 PM)', read: false, time: '15m ago', type: 'alert' },
     { id: 'n-2', text: 'Margaret Johnson completed Memory Match with 85% accuracy', read: false, time: '2m ago', type: 'success' },
     { id: 'n-3', text: 'AI adjusted Dorothy Williams difficulty to Hard', read: true, time: '1h ago', type: 'info' }
   ]);
 
-  // Sync with localStorage
+  // Derived current patient
+  const currentPatient = patients.find(p => p.id === currentPatientId) || patients[0];
+  const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0];
+
+  // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('anjana_patients', JSON.stringify(patients));
   }, [patients]);
@@ -72,7 +85,9 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('anjana_auth', isAuthenticated ? 'true' : 'false');
-  }, [isAuthenticated]);
+    localStorage.setItem('anjana_user_role', userRole);
+    localStorage.setItem('anjana_patient_id', currentPatientId);
+  }, [isAuthenticated, userRole, currentPatientId]);
 
   // Network offline listener
   useEffect(() => {
@@ -101,20 +116,6 @@ export const AppProvider = ({ children }) => {
     };
   }, [pendingSyncCount]);
 
-  const login = (email, password) => {
-    setIsAuthenticated(true);
-    setCaregiver({
-      ...initialCaregiver,
-      email: email || initialCaregiver.email
-    });
-    return true;
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('anjana_auth');
-  };
-
   const addActivity = (item) => {
     const newActivity = {
       id: `a-${Date.now()}`,
@@ -122,9 +123,56 @@ export const AppProvider = ({ children }) => {
       ...item
     };
     setActivities(prev => [newActivity, ...prev]);
-    if (!isOnline) {
+    if (!navigator.onLine) {
       setPendingSyncCount(c => c + 1);
     }
+  };
+
+  // Login as Caregiver
+  const loginCaregiver = (email) => {
+    setIsAuthenticated(true);
+    setUserRole('caregiver');
+    setCaregiver({
+      ...initialCaregiver,
+      email: email || initialCaregiver.email
+    });
+    return true;
+  };
+
+  // Backward compatibility
+  const login = (email) => loginCaregiver(email);
+
+  // Login as Patient
+  const loginPatient = (patientId) => {
+    const target = patients.find(p => p.id === patientId) || patients[0];
+    setIsAuthenticated(true);
+    setUserRole('patient');
+    setCurrentPatientId(target.id);
+    setSelectedPatientId(target.id);
+    addActivity({
+      type: 'login',
+      message: `${target.name} signed into Patient Portal`,
+      detail: `Current difficulty: ${target.currentDifficulty}`,
+      icon: '👋'
+    });
+    return true;
+  };
+
+  // Quick switch between portals
+  const switchPortal = (role, patientId = null) => {
+    setUserRole(role);
+    if (patientId) {
+      setCurrentPatientId(patientId);
+      setSelectedPatientId(patientId);
+    }
+    localStorage.setItem('anjana_user_role', role);
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUserRole('caregiver');
+    localStorage.removeItem('anjana_auth');
+    localStorage.removeItem('anjana_user_role');
   };
 
   const addPatient = (patientData) => {
@@ -190,15 +238,59 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  const completePatientReminder = (id) => {
+    const target = reminders.find(r => r.id === id);
+    if (!target) return;
+
+    setReminders(prev => prev.map(r => r.id === id ? { ...r, status: 'completed' } : r));
+
+    addActivity({
+      type: 'reminder',
+      message: `${currentPatient.name} completed "${target.title}"`,
+      detail: `Confirmed via Patient Portal at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      icon: '✅'
+    });
+
+    setNotifications(prev => [
+      { id: `n-${Date.now()}`, text: `✅ ${currentPatient.name} completed "${target.title}"`, read: false, time: 'Just now', type: 'success' },
+      ...prev
+    ]);
+  };
+
+  // Direct alert from Caretaker to Patient
   const sendCustomAlert = (patientName, message) => {
     addActivity({
       type: 'alert',
-      message: `Sent direct alert to ${patientName}`,
+      message: `Caregiver sent alert to ${patientName}`,
       detail: `"${message}"`,
       icon: '📢'
     });
     setNotifications(prev => [
       { id: `n-${Date.now()}`, text: `Alert sent to ${patientName}: "${message}"`, read: false, time: 'Just now', type: 'alert' },
+      ...prev
+    ]);
+    setActivePatientAlert({
+      id: `alert-${Date.now()}`,
+      patientName,
+      message,
+      timestamp: Date.now()
+    });
+  };
+
+  const dismissPatientAlert = () => {
+    setActivePatientAlert(null);
+  };
+
+  // Patient calls caregiver
+  const patientCallCaregiver = () => {
+    addActivity({
+      type: 'alert',
+      message: `📞 ${currentPatient.name} requested caregiver assistance!`,
+      detail: `Patient pressed "Call Caregiver" button in Patient Portal`,
+      icon: '🚨'
+    });
+    setNotifications(prev => [
+      { id: `n-${Date.now()}`, text: `🚨 ${currentPatient.name} requested caregiver assistance!`, read: false, time: 'Just now', type: 'alert' },
       ...prev
     ]);
   };
@@ -221,7 +313,8 @@ export const AppProvider = ({ children }) => {
     setFamilyMembers(prev => prev.filter(m => m.id !== id));
   };
 
-  const recordGameResult = (patientId, gameName, score, difficulty) => {
+  // Dynamic AI Adaptive difficulty tracking
+  const recordGameResult = (patientId, gameName, score) => {
     const patient = patients.find(p => p.id === patientId);
     if (!patient) return;
 
@@ -247,18 +340,28 @@ export const AppProvider = ({ children }) => {
       detail: `Score: ${score}% | AI Difficulty: ${nextDifficulty}`,
       icon: '🎯'
     });
-  };
 
-  const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0];
+    setNotifications(prev => [
+      { id: `n-${Date.now()}`, text: `🎯 ${patient.name} completed ${gameName} with ${score}% accuracy`, read: false, time: 'Just now', type: 'success' },
+      ...prev
+    ]);
+  };
 
   return (
     <AppContext.Provider
       value={{
         caregiver,
         isAuthenticated,
+        userRole,
         login,
+        loginCaregiver,
+        loginPatient,
+        switchPortal,
         logout,
         patients,
+        currentPatient,
+        currentPatientId,
+        setCurrentPatientId,
         selectedPatient,
         selectedPatientId,
         setSelectedPatientId,
@@ -268,6 +371,7 @@ export const AppProvider = ({ children }) => {
         addReminder,
         deleteReminder,
         toggleReminderStatus,
+        completePatientReminder,
         activities,
         addActivity,
         familyMembers,
@@ -277,7 +381,10 @@ export const AppProvider = ({ children }) => {
         isOnline,
         pendingSyncCount,
         notifications,
+        activePatientAlert,
+        dismissPatientAlert,
         sendCustomAlert,
+        patientCallCaregiver,
         recordGameResult,
         performanceData: initialPerformanceData,
         stats: {

@@ -2,39 +2,56 @@
 
 @layer base {
   :root {
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  body {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
     font-family: var(--font-sans);
     background-color: #FDFBF7;
     color: #2D2A3E;
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+
+  /* Prevent text zoom on input focus for mobile Safari */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
-/* Custom subtle scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Mobile Safe Area Inset Utilities */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #D8D4E2;
-  border-radius: 9999px;
+.bottom-safe {
+  bottom: env(safe-area-inset-bottom, 0px);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #8B7EC8;
+/* Hide scrollbar for smooth mobile horizontal swipe tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Glass & soft shadow utilities */
@@ -49,4 +66,25 @@
 .card-shadow-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 28px -4px rgba(45, 42, 62, 0.08), 0 4px 10px -2px rgba(45, 42, 62, 0.04);
+}
+
+/* Mobile active button press feel */
+.touch-press:active {
+  transform: scale(0.97);
+}
+
+/* Mobile bottom sheet animation */
+@keyframes slideUpMobile {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-bottom-sheet {
+  animation: slideUpMobile 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

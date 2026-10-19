@@ -112,8 +112,8 @@ export const VoiceAssistantModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 card-shadow border border-[#2D2A3E]/10 relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-8 card-shadow border border-[#2D2A3E]/10 relative overflow-hidden animate-bottom-sheet sm:animate-none max-h-[92dvh] overflow-y-auto">
         {/* Decorative background glow */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#8B7EC8]/15 via-[#A8BBA0]/10 to-transparent rounded-full blur-2xl pointer-events-none" />
 
